@@ -67,7 +67,7 @@ fi
 # export ARCHFLAGS="-arch $(uname -m)"
 
 # Aliases
-alias cls="clear; myfetch -i G -f -c 16 -C '  '"
+alias clear="clear; myfetch -i G -f -c 16 -C '  '"
 alias lsd="eza --icons"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -82,3 +82,5 @@ export PATH="$HOME/.local/bin:$PATH"
 ## [/Completion]
 
 myfetch -i G -f -c 16 -C "  "
+
+eval "$(starship init zsh)"
