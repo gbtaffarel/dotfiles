@@ -67,7 +67,7 @@ fi
 # export ARCHFLAGS="-arch $(uname -m)"
 
 # Aliases
-alias clear="clear; myfetch -i G -f -c 16 -C '  '"
+# alias clear="clear; myfetch -i G -f -c 16 -C '  '"
 alias lsd="eza --icons"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
