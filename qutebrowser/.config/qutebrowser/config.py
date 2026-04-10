@@ -1,5 +1,7 @@
 config.load_autoconfig(False)
 
+config.set("colors.webpage.darkmode.enabled", True)
+
 # # Search engines
 # c.url.searchengines = {
 #     'DEFAULT':  'https://google.com/search?q={}',
