@@ -1,5 +1,4 @@
-# If not running interactively, don't do anything
-[[ $- != *i* ]] && return
+[[ $- == *i* ]] && source /usr/share/blesh/ble.sh --noattach
 
 alias ls='exa --icons --group-directories-first'
 alias ll='ls -l'
@@ -13,3 +12,4 @@ alias bye='shutdown -P now'
 
 eval "$(zoxide init bash)"
 eval "$(starship init bash)"
+[[ ${BLE_VERSION-} ]] && ble-attach
