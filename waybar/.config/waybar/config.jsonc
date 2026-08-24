@@ -115,34 +115,37 @@
     },
     "custom/media-prev": {
       "format": "",
-      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect previous",
+      "on-click": "~/.config/waybar/custom_modules/media/media_control.sh previous",
       "tooltip": false
     },
     "custom/media-play-pause": {
       "format": "{}",
-      "exec": "playerctl --player=playerctld --ignore-player=kdeconnect --follow status 2>/dev/null | while read -r status; do [ \"$status\" = 'Playing' ] && echo '' || echo ''; done",
-      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect play-pause",
+      "exec": "~/.config/waybar/custom_modules/media/media_control.sh status-icon",
+      "interval": 1,
+      "signal": 9,
+      "on-click": "~/.config/waybar/custom_modules/media/media_control.sh play-pause",
       "tooltip": false
     },
     "custom/media-next": {
       "format": "",
-      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect next",
+      "on-click": "~/.config/waybar/custom_modules/media/media_control.sh next",
       "tooltip": false
     },
     "custom/media-switch": {
       "format": "",
-      "on-click": "playerctld shift",
-      "on-click-right": "playerctld unshift",
+      "on-click": "~/.config/waybar/custom_modules/media/media_control.sh switch next",
+      "on-click-right": "~/.config/waybar/custom_modules/media/media_control.sh switch prev",
       "tooltip": false
     },
     "custom/media-text": {
       "exec": "~/.config/waybar/custom_modules/media/media-scroll.sh",
       "escape": true,
       "tooltip": false,
-      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect play-pause",
-      "on-click-right": "playerctld shift",
-      "on-click-middle": "playerctld unshift",
-      "on-scroll-up": "playerctl --player=playerctld --ignore-player=kdeconnect position 5+",
-      "on-scroll-down": "playerctl --player=playerctld --ignore-player=kdeconnect position 5-"
+      "signal": 9,
+      "on-click": "~/.config/waybar/custom_modules/media/media_control.sh play-pause",
+      "on-click-right": "~/.config/waybar/custom_modules/media/media_control.sh switch next",
+      "on-click-middle": "~/.config/waybar/custom_modules/media/media_control.sh switch prev",
+      "on-scroll-up": "~/.config/waybar/custom_modules/media/media_control.sh position 5+",
+      "on-scroll-down": "~/.config/waybar/custom_modules/media/media_control.sh position 5-"
     }
 }
