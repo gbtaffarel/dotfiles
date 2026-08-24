@@ -141,7 +141,6 @@
       "exec": "~/.config/waybar/custom_modules/media/media-scroll.sh",
       "escape": true,
       "tooltip": false,
-      "signal": 9,
       "on-click": "~/.config/waybar/custom_modules/media/media_control.sh play-pause",
       "on-click-right": "~/.config/waybar/custom_modules/media/media_control.sh switch next",
       "on-click-middle": "~/.config/waybar/custom_modules/media/media_control.sh switch prev",
