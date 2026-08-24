@@ -95,14 +95,16 @@ window#waybar {
 
 #custom-media-prev,
 #custom-media-play-pause,
-#custom-media-next {
+#custom-media-next,
+#custom-media-switch {
   color: @color5;
   padding: 0px 4px;
 }
 
 #custom-media-prev:hover,
 #custom-media-play-pause:hover,
-#custom-media-next:hover {
+#custom-media-next:hover,
+#custom-media-switch:hover {
   color: @color1;
 }
 
