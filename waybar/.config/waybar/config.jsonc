@@ -2,7 +2,7 @@
     "layer": "top",
     "modules-left": ["hyprland/workspaces", "group/media"],
     "modules-center": ["clock"],
-    "modules-right": ["tray", "hyprland/submap", "group/volume", "battery", "bluetooth", "network", "cpu", "memory"],
+    "modules-right": ["tray", "hyprland/submap", "group/volume", "battery", "bluetooth", "network", "group/cpu", "memory"],
     "tray": {
         "icon-size": 18,
         "spacing": 8
@@ -34,10 +34,23 @@
       "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
       "on-click": "exec kitty --title=bluetui -e bluetui"
     },
+    "group/cpu": {
+        "orientation": "horizontal",
+        "modules": [
+            "cpu",
+            "temperature"
+        ]
+    },
     "cpu": {
         "interval": 10,
-        "format": " {}%",
-        "max-length": 10,
+        "format": " {}% |",
+        "on-click": "exec kitty --title=btop -e btop"
+    },
+    "temperature": {
+        "interval": 10,
+        "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+        "input-filename": "temp1_input",
+        "format": " {temperatureC}°C",
         "on-click": "exec kitty --title=btop -e btop"
     },
     "memory": {
@@ -93,27 +106,34 @@
     "group/media": {
       "orientation": "horizontal",
       "modules": [
-        "custom/media-animation",
-        "custom/media-now-playing",
-        "custom/media-time"
+        "custom/media-prev",
+        "custom/media-play-pause",
+        "custom/media-next",
+        "custom/media-text"
       ]
     },
-    "custom/media-now-playing": {
-      "exec": "~/.config/waybar/custom_modules/media/media-now-playing.sh",
+    "custom/media-prev": {
+      "format": "",
+      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect previous",
+      "tooltip": false
+    },
+    "custom/media-play-pause": {
+      "format": "{}",
+      "exec": "playerctl --player=playerctld --ignore-player=kdeconnect --follow status 2>/dev/null | while read -r status; do [ \"$status\" = 'Playing' ] && echo '' || echo ''; done",
+      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect play-pause",
+      "tooltip": false
+    },
+    "custom/media-next": {
+      "format": "",
+      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect next",
+      "tooltip": false
+    },
+    "custom/media-text": {
+      "exec": "~/.config/waybar/custom_modules/media/media-scroll.sh",
       "escape": true,
       "tooltip": false,
-      "on-click": "playerctl play-pause",
-      "on-click-middle": "playerctl previous",
-      "on-click-right": "playerctl next",
-    },
-    "custom/media-animation": {
-      "exec": "~/.config/waybar/custom_modules/media/media-animation.sh",
-      "tooltip": false,
-    },
-    "custom/media-time": {
-      "exec": "~/.config/waybar/custom_modules/media/media-time.sh",
-      "escape": true,
-      "interval": 1,
-      "tooltip": false,
+      "on-click": "playerctl --player=playerctld --ignore-player=kdeconnect play-pause",
+      "on-scroll-up": "playerctl --player=playerctld --ignore-player=kdeconnect position 5+",
+      "on-scroll-down": "playerctl --player=playerctld --ignore-player=kdeconnect position 5-"
     }
 }

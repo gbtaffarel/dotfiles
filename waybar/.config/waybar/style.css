@@ -45,6 +45,14 @@ window#waybar {
   margin: 5px 10px 5px 0px;
 }
 
+#cpu #cpu,
+#cpu #temperature {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
 #submap,
 #workspaces button.urgent {
   background: rgba(227, 81, 73, 1);
@@ -85,18 +93,22 @@ window#waybar {
   margin: 7px 0px 7px 80px;
 }
 
-#custom-media-animation {
-  font-size: 13px;
-  margin-right: 10px;
+#custom-media-prev,
+#custom-media-play-pause,
+#custom-media-next {
+  color: @color5;
+  padding: 0px 4px;
 }
 
-#custom-media-now-playing {
-  margin-right: 10px;
+#custom-media-prev:hover,
+#custom-media-play-pause:hover,
+#custom-media-next:hover {
+  color: @color1;
 }
 
-#custom-media-time {
-  color: @color8;
-  font-size: 14px;
+#custom-media-text {
+  color: @color5;
+  padding: 0px 6px;
 }
 
 tooltip {
