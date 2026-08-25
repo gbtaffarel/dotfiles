@@ -45,14 +45,8 @@ Rectangle {
                     
                     onClicked: mouse => {
                         if (mouse.button === Qt.LeftButton) {
-                            trayItem.modelData.activate(mouse.x, mouse.y);
-                        } else if (mouse.button === Qt.RightButton) {
-                            if (trayItem.modelData.hasMenu && trayItem.modelData.menu) {
-                                trayItem.modelData.menu.open(mouse.x, mouse.y);
-                            } else {
-                                trayItem.modelData.activate(mouse.x, mouse.y);
-                            }
-                        } else if (mouse.button === Qt.MiddleButton) {
+                            trayItem.modelData.activate();
+                        } else {
                             trayItem.modelData.secondaryActivate();
                         }
                     }
