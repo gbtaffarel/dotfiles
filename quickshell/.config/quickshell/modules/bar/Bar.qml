@@ -70,6 +70,7 @@ Item {
         
         // 1. System Tray
         BarComponents.SystemTray {
+            barWindow: root.barWindow
             anchors.verticalCenter: parent.verticalCenter
         }
         
