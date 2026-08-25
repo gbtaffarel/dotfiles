@@ -2,6 +2,7 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import QtQuick 6.10
 
 Singleton {
@@ -17,8 +18,29 @@ Singleton {
     readonly property int activeWsId: focusedWorkspace?.id ?? 1
     property string currentSubmap: ""
 
+    Process {
+        id: execDispatchProc
+    }
+
     function dispatch(request: string): void {
         Hyprland.dispatch(request);
+    }
+
+    function switchToWorkspace(wsId: var): void {
+        if (Hyprland.usingLua) {
+            Hyprland.dispatch("hl.dsp.focus({ workspace = " + wsId + " })");
+        } else {
+            Hyprland.dispatch("workspace " + wsId);
+        }
+    }
+
+    function scrollWorkspace(delta: int): void {
+        const dir = delta > 0 ? "e-1" : "e+1";
+        if (Hyprland.usingLua) {
+            Hyprland.dispatch("hl.dsp.focus({ workspace = '" + dir + "' })");
+        } else {
+            Hyprland.dispatch("workspace " + dir);
+        }
     }
 
     function monitorFor(screen: var): var {

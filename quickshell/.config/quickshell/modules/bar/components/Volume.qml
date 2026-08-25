@@ -20,9 +20,10 @@ Rectangle {
         command: ["pavucontrol"]
     }
     
+    // Wheel scroll adjusts volume, acceptedButtons: Qt.NoButton ensures click pass-through
     MouseArea {
         anchors.fill: parent
-        hoverEnabled: true
+        hoverEnabled: false
         acceptedButtons: Qt.NoButton
         
         onWheel: wheel => {
@@ -89,7 +90,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
-                    width: Math.max(8, Math.min(parent.width, (audio.volume) * parent.width))
+                    width: Math.min(parent.width, Math.max(4, audio.volume * parent.width))
                     radius: 5
                     color: pywal.color1
                 }

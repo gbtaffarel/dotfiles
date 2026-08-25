@@ -35,14 +35,16 @@ Item {
     implicitWidth: rowLayout.implicitWidth
     implicitHeight: 28
     
+    // Wheel mouse area with acceptedButtons: Qt.NoButton so clicks pass through!
     MouseArea {
         anchors.fill: parent
-        hoverEnabled: true
+        acceptedButtons: Qt.NoButton
+        hoverEnabled: false
         onWheel: wheel => {
             if (wheel.angleDelta.y > 0) {
-                hypr.dispatch("workspace e-1");
+                hypr.scrollWorkspace(1);
             } else if (wheel.angleDelta.y < 0) {
-                hypr.dispatch("workspace e+1");
+                hypr.scrollWorkspace(-1);
             }
         }
     }
@@ -97,7 +99,7 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     hoverEnabled: true
                     onClicked: {
-                        hypr.dispatch("workspace " + wsButton.wsId);
+                        hypr.switchToWorkspace(wsButton.wsId);
                     }
                 }
             }
