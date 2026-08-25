@@ -15,6 +15,7 @@ Singleton {
     readonly property var focusedWorkspace: Hyprland.focusedWorkspace
     readonly property var focusedMonitor: Hyprland.focusedMonitor
     readonly property int activeWsId: focusedWorkspace?.id ?? 1
+    property string currentSubmap: ""
 
     function dispatch(request: string): void {
         Hyprland.dispatch(request);
@@ -48,6 +49,11 @@ Singleton {
 
         function onRawEvent(event: var): void {
             const n = event.name;
+            if (n === "submap") {
+                const sub = event.data?.trim() ?? "";
+                root.currentSubmap = (sub === "default" || sub === "") ? "" : sub;
+                return;
+            }
             if (n.endsWith("v2"))
                 return;
 

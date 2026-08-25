@@ -3,59 +3,28 @@
 //@ pragma Env QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
 
 import Quickshell
-import Quickshell.Services.Notifications
 import QtQuick 6.10
 import "services" as QsServices
-import "modules/osd"
 
 ShellRoot {
     id: root
     
-    // Initialize services immediately
-    readonly property var notifs: QsServices.Notifs
+    // Initialize services
     readonly property var pywal: QsServices.Pywal
+    readonly property var hypr: QsServices.Hypr
     readonly property var audio: QsServices.Audio
-    readonly property var brightness: QsServices.Brightness
+    readonly property var players: QsServices.Players
+    readonly property var sys: QsServices.SystemUsage
+    readonly property var bt: QsServices.Bluetooth
+    readonly property var net: QsServices.Network
     
-    // Direct NotificationServer to ensure it starts
-    NotificationServer {
-        id: notificationServer
-        
-        keepOnReload: false
-        actionsSupported: true
-        bodyHyperlinksSupported: true
-        bodyMarkupSupported: true
-        imageSupported: true
-        persistenceSupported: true
-        
-        onNotification: notif => {
-            console.log("📬 [ShellRoot] Notification received:", notif.appName, notif.summary);
-            notif.tracked = true;
-            notifs.addNotification(notif);
-        }
-        
-        Component.onCompleted: {
-            console.log("🔔 NotificationServer registered on D-Bus");
-        }
-    }
-    
+    // Main Waybar-equivalent bar
     Loader {
         id: barLoader
         source: "modules/bar/BarWrapper.qml"
     }
-    
-    // Notification popups in top-right corner
-    Loader {
-        id: notificationPopupsLoader
-        source: "modules/bar/components/NotificationPopups.qml"
-    }
-    
-    // OSD overlays (volume and brightness)
-    Wrapper {
-        pywal: root.pywal
-    }
 
     Component.onCompleted: {
-        console.log("QuickShell loaded successfully!")
+        console.log("⚡ Quickshell Waybar replacement loaded successfully!")
     }
 }

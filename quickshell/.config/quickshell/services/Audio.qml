@@ -22,6 +22,7 @@ Singleton {
         return Math.max(0, Math.min(1.5, vol))
     }
     readonly property int percentage: Math.round(volume * 100)
+    readonly property string icon: muted ? "" : (percentage < 50 ? "" : "")
     
     readonly property bool sourceMuted: sourceReady ? (source.audio.muted ?? false) : false
     readonly property real sourceVolume: sourceReady ? (source.audio.volume ?? 0) : 0

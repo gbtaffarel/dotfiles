@@ -1,74 +1,60 @@
 import QtQuick 6.10
-import QtQuick.Layouts 6.10
-import qs.services
-import "../../../components/effects"
+import Quickshell
+import Quickshell.Io
+import "../../../services" as QsServices
+import "."
 
 Item {
     id: root
     
-    implicitWidth: clockRow.implicitWidth
-    implicitHeight: clockRow.implicitHeight
+    readonly property var pywal: QsServices.Pywal
+    readonly property var time: QsServices.Time
     
-    Row {
-        id: clockRow
+    implicitWidth: clockText.implicitWidth + 12
+    implicitHeight: 28
+    
+    Process {
+        id: openCalendarProc
+        command: ["zen-browser", "https://calendar.google.com"]
+    }
+    
+    Text {
+        id: clockText
         anchors.centerIn: parent
-        spacing: 8
+        text: "󰥔 " + time.format("ddd, dd. MMM hh:mm AP")
+        font.family: "JetBrainsMono Nerd Font Propo"
+        font.pixelSize: 15
+        color: clockMouse.containsMouse ? pywal.color1 : "white"
         
-        // Compact time display
-        Row {
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 1
-            
-            // Hours
-            Text {
-                id: hoursText
-                text: Time.format("hh")
-                color: Pywal.foreground
-                font.pixelSize: 12
-                font.weight: Font.Bold
-                font.family: "Inter"
-                font.letterSpacing: 0.3
-            }
-            
-            // Animated colon separator
-            Text {
-                id: colonSeparator
-                text: ":"
-                color: Pywal.primary
-                font.pixelSize: 12
-                font.weight: Font.Bold
-                font.family: "Inter"
-                
-                // Subtle pulse animation
-                SequentialAnimation on opacity {
-                    running: true
-                    loops: Animation.Infinite
-                    
-                    NumberAnimation { to: 0.4; duration: 800; easing.type: Easing.InOutSine }
-                    NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
-                }
-            }
-            
-            // Minutes
-            Text {
-                id: minutesText
-                text: Time.format("mm")
-                color: Pywal.foreground
-                font.pixelSize: 12
-                font.weight: Font.Bold
-                font.family: "Inter"
-                font.letterSpacing: 0.3
-            }
+        Behavior on color {
+            ColorAnimation { duration: 150 }
         }
+    }
+    
+    MouseArea {
+        id: clockMouse
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        hoverEnabled: true
         
-        // Compact date
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: Time.format("ddd d")
-            color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.6)
-            font.pixelSize: 10
-            font.weight: Font.Medium
-            font.family: "Inter"
+        onClicked: {
+            openCalendarProc.running = true;
+        }
+    }
+    
+    // Calendar tooltip on hover
+    ClockCalendar {
+        id: calendarPopup
+        anchors.top: parent.bottom
+        anchors.topMargin: 8
+        anchors.horizontalCenter: parent.horizontalCenter
+        visible: clockMouse.containsMouse || calMouse.containsMouse
+        z: 9999
+        
+        MouseArea {
+            id: calMouse
+            anchors.fill: parent
+            hoverEnabled: true
         }
     }
 }

@@ -1,140 +1,118 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell
+import Quickshell.Io
 import "../../../services" as QsServices
-import "../../../components/effects"
 
-// Volume indicator with number - no popup
-Item {
+Rectangle {
     id: root
-    
-    property var barWindow
-    property var volumePopup  // Kept for compatibility but not used
     
     readonly property var pywal: QsServices.Pywal
     readonly property var audio: QsServices.Audio
-    readonly property var volumeMonitor: QsServices.VolumeMonitor
-    readonly property bool isHovered: mouseArea.containsMouse
-    readonly property bool isMuted: volumeMonitor.muted
-    readonly property int percentage: volumeMonitor.percentage
     
-    implicitWidth: volumeRow.implicitWidth
-    implicitHeight: 20
+    implicitWidth: rowLayout.implicitWidth + 16
+    implicitHeight: 28
+    radius: 8
+    color: pywal.color8
     
-    RowLayout {
-        id: volumeRow
-        anchors.centerIn: parent
-        spacing: 3
+    Process {
+        id: pavuProc
+        command: ["pavucontrol"]
+    }
+    
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.NoButton
         
-        // Volume icon
-        Text {
-            id: volumeIcon
-            
-            text: {
-                if (isMuted) return "󰖁"
-                if (percentage >= 70) return "󰕾"
-                if (percentage >= 30) return "󰖀"
-                return "󰕿"
-            }
-            
-            font.family: "Material Design Icons"
-            font.pixelSize: 14
-            
-            color: {
-                if (isMuted) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
-                if (isHovered) return pywal.primary
-                return pywal.foreground
-            }
-            
-            Behavior on color {
-                ColorAnimation { duration: 150 }
-            }
-            
-            scale: isHovered ? 1.05 : 1.0
-            Behavior on scale {
-                NumberAnimation { duration: 100 }
+        onWheel: wheel => {
+            if (wheel.angleDelta.y > 0) {
+                audio.increaseVolume();
+            } else if (wheel.angleDelta.y < 0) {
+                audio.decreaseVolume();
             }
         }
+    }
+    
+    RowLayout {
+        id: rowLayout
+        anchors.centerIn: parent
+        spacing: 8
         
-        // Percentage number with animated transitions
-        Text {
-            id: volumeText
+        // Volume label & icon
+        Item {
+            implicitWidth: volText.implicitWidth
+            implicitHeight: 20
             
-            text: percentage
-            font.family: "Inter"
-            font.pixelSize: 10
-            font.weight: Font.Medium
-            
-            color: {
-                if (isMuted) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
-                return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
+            Text {
+                id: volText
+                anchors.centerIn: parent
+                text: audio.muted ? "" : (audio.percentage + "% " + audio.icon)
+                font.family: "JetBrainsMono Nerd Font Propo"
+                font.pixelSize: 15
+                color: "white"
             }
             
-            Behavior on color {
-                ColorAnimation { duration: 150 }
-            }
-            
-            // Number change animation
-            Behavior on text {
-                SequentialAnimation {
-                    NumberAnimation {
-                        target: volumeText
-                        property: "scale"
-                        to: 1.15
-                        duration: 80
-                    }
-                    NumberAnimation {
-                        target: volumeText
-                        property: "scale"
-                        to: 1.0
-                        duration: 100
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                
+                onClicked: mouse => {
+                    if (mouse.button === Qt.LeftButton) {
+                        pavuProc.running = true;
+                    } else if (mouse.button === Qt.MiddleButton) {
+                        audio.toggleMute();
                     }
                 }
             }
         }
-    }
-    
-    // Interaction area
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        anchors.margins: -4
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
         
-        onWheel: wheel => {
-            if (wheel.angleDelta.y > 0) {
-                audio.increaseVolume()
-            } else {
-                audio.decreaseVolume()
+        // Pulseaudio Slider
+        Item {
+            id: sliderContainer
+            implicitWidth: 75
+            implicitHeight: 16
+            
+            // Trough
+            Rectangle {
+                id: trough
+                anchors.verticalCenter: parent.verticalCenter
+                width: 75
+                height: 8
+                radius: 5
+                color: pywal.color2
+                
+                // Highlight / Filled portion
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: Math.max(8, Math.min(parent.width, (audio.volume) * parent.width))
+                    radius: 5
+                    color: pywal.color1
+                }
             }
-        }
-        
-        onClicked: audio.toggleMute()
-    }
-    
-    // Volume change pulse
-    Connections {
-        target: volumeMonitor
-        function onPercentageChanged() {
-            pulseAnim.restart()
-        }
-    }
-    
-    SequentialAnimation {
-        id: pulseAnim
-        
-        NumberAnimation {
-            target: volumeIcon
-            property: "scale"
-            to: 1.2
-            duration: 80
-        }
-        NumberAnimation {
-            target: volumeIcon
-            property: "scale"
-            to: isHovered ? 1.05 : 1.0
-            duration: 120
+            
+            MouseArea {
+                id: sliderMouse
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                
+                function updateFromMouse(mouseX) {
+                    const norm = Math.max(0, Math.min(1.0, mouseX / trough.width));
+                    audio.setVolume(norm);
+                }
+                
+                onPressed: mouse => updateFromMouse(mouse.x)
+                onPositionChanged: mouse => {
+                    if (pressed) {
+                        updateFromMouse(mouse.x);
+                    }
+                }
+            }
         }
     }
 }

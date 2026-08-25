@@ -11,9 +11,17 @@ Singleton {
     property bool active: true
     
     property real cpuPerc: 0
+    readonly property int cpuPercentage: Math.round(cpuPerc * 100)
+    property int cpuTemperature: 45
+    
     property real memUsed: 0
     property real memTotal: 1
     readonly property real memPerc: memTotal > 0 ? memUsed / memTotal : 0
+    readonly property real memUsedGb: memUsed / (1024 * 1024 * 1024)
+    readonly property real memTotalGb: memTotal > 0 ? memTotal / (1024 * 1024 * 1024) : 1
+    readonly property int memPercentage: Math.round(memPerc * 100)
+    readonly property string memTooltip: memUsedGb.toFixed(1) + "G/" + memTotalGb.toFixed(1) + "G used"
+    
     property real diskUsed: 0
     property real diskTotal: 1
     readonly property real diskPerc: diskTotal > 0 ? diskUsed / diskTotal : 0
@@ -45,6 +53,7 @@ Singleton {
         detectGpu()
         updateTimer.start()
         updateCpu()
+        updateTemp()
         updateMemory()
         updateDisk()
         updateNetwork()
@@ -57,6 +66,10 @@ Singleton {
     
     function updateCpu() {
         cpuProcess.running = true
+    }
+
+    function updateTemp() {
+        tempProcess.running = true
     }
     
     function updateMemory() {
@@ -122,6 +135,21 @@ Singleton {
                     
                     lastCpuIdle = idle
                     lastCpuTotal = total
+                }
+            }
+        }
+    }
+    
+    // CPU Temperature (matches waybar hwmon/coretemp)
+    Process {
+        id: tempProcess
+        command: ["/bin/sh", "-c", "cat /sys/devices/platform/coretemp.0/hwmon/hwmon*/temp1_input 2>/dev/null || cat /sys/class/hwmon/hwmon*/temp1_input 2>/dev/null || cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null || echo '45000'"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                const val = parseInt(data.trim());
+                if (!isNaN(val) && val > 0) {
+                    root.cpuTemperature = val > 1000 ? Math.round(val / 1000) : val;
                 }
             }
         }
@@ -313,8 +341,9 @@ Singleton {
         onTriggered: {
             tickCount++
             
-            // Update CPU, Memory, Network every tick (2s)
+            // Update CPU, Temp, Memory, Network every tick (2s)
             updateCpu()
+            updateTemp()
             updateMemory()
             updateNetwork()
             
