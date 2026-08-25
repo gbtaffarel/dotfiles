@@ -47,6 +47,18 @@ Rectangle {
                     menu: trayItem.modelData.hasMenu ? trayItem.modelData.menu : null
                 }
                 
+                onIsMenuOpenChanged: {
+                    if (isMenuOpen && menuOpener.menu) {
+                        if (typeof menuOpener.menu.opened === "function") {
+                            menuOpener.menu.opened();
+                        }
+                    } else if (!isMenuOpen && menuOpener.menu) {
+                        if (typeof menuOpener.menu.closed === "function") {
+                            menuOpener.menu.closed();
+                        }
+                    }
+                }
+                
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
@@ -225,7 +237,11 @@ Rectangle {
                                             
                                             onClicked: {
                                                 if (entryItem.isEnabled && entryItem.modelData) {
-                                                    entryItem.modelData.sendTriggered();
+                                                    if (typeof entryItem.modelData.triggered === "function") {
+                                                        entryItem.modelData.triggered();
+                                                    } else if (typeof entryItem.modelData.sendTriggered === "function") {
+                                                        entryItem.modelData.sendTriggered();
+                                                    }
                                                     trayItem.isMenuOpen = false;
                                                 }
                                             }
