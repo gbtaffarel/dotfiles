@@ -9,6 +9,7 @@ Rectangle {
     id: root
     
     property var barWindow
+    property var activeOpenItem: null
     
     readonly property var pywal: QsServices.Pywal
     readonly property bool hasItems: SystemTray.items.values.length > 0
@@ -35,6 +36,29 @@ Rectangle {
                 
                 implicitWidth: 18
                 implicitHeight: 18
+                width: 18
+                height: 18
+                Layout.preferredWidth: 18
+                Layout.preferredHeight: 18
+                
+                onIsMenuOpenChanged: {
+                    if (isMenuOpen) {
+                        if (root.activeOpenItem && root.activeOpenItem !== trayItem) {
+                            root.activeOpenItem.isMenuOpen = false;
+                        }
+                        root.activeOpenItem = trayItem;
+                        if (menuOpener.menu && typeof menuOpener.menu.opened === "function") {
+                            menuOpener.menu.opened();
+                        }
+                    } else {
+                        if (root.activeOpenItem === trayItem) {
+                            root.activeOpenItem = null;
+                        }
+                        if (menuOpener.menu && typeof menuOpener.menu.closed === "function") {
+                            menuOpener.menu.closed();
+                        }
+                    }
+                }
                 
                 IconImage {
                     anchors.fill: parent
@@ -47,25 +71,50 @@ Rectangle {
                     menu: trayItem.modelData.hasMenu ? trayItem.modelData.menu : null
                 }
                 
-                onIsMenuOpenChanged: {
-                    if (isMenuOpen && menuOpener.menu) {
-                        if (typeof menuOpener.menu.opened === "function") {
-                            menuOpener.menu.opened();
+                // Hover timers for open and close
+                Timer {
+                    id: openTimer
+                    interval: 180
+                    onTriggered: {
+                        if (trayItem.modelData.hasMenu) {
+                            trayItem.isMenuOpen = true;
                         }
-                    } else if (!isMenuOpen && menuOpener.menu) {
-                        if (typeof menuOpener.menu.closed === "function") {
-                            menuOpener.menu.closed();
+                    }
+                }
+                
+                Timer {
+                    id: closeTimer
+                    interval: 280
+                    onTriggered: {
+                        if (!iconMouse.containsMouse && !menuCardMouse.containsMouse) {
+                            trayItem.isMenuOpen = false;
                         }
                     }
                 }
                 
                 MouseArea {
+                    id: iconMouse
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                     hoverEnabled: true
                     
+                    onEntered: {
+                        closeTimer.stop();
+                        if (trayItem.modelData.hasMenu) {
+                            openTimer.start();
+                        }
+                    }
+                    
+                    onExited: {
+                        openTimer.stop();
+                        closeTimer.start();
+                    }
+                    
                     onClicked: mouse => {
+                        openTimer.stop();
+                        closeTimer.stop();
+                        
                         if (mouse.button === Qt.LeftButton) {
                             if (trayItem.modelData.onlyMenu && trayItem.modelData.hasMenu) {
                                 trayItem.isMenuOpen = !trayItem.isMenuOpen;
@@ -88,15 +137,16 @@ Rectangle {
                     }
                 }
                 
-                // Custom Pywal Dropdown Menu Window
+                // Custom Pywal Dropdown Menu Window anchored to the icon
                 PopupWindow {
                     id: menuPopup
-                    visible: trayItem.isMenuOpen && menuOpener.children && menuOpener.children.values.length > 0
+                    visible: trayItem.isMenuOpen && root.barWindow !== null && root.barWindow !== undefined && menuOpener.children && menuOpener.children.values.length > 0
                     
                     anchor.window: root.barWindow
                     anchor.item: trayItem
                     anchor.edges: Edges.Bottom
                     anchor.gravity: Edges.Bottom
+                    anchor.adjustment: PopupAdjustment.All
                     anchor.margins.top: 8
                     
                     color: "transparent"
@@ -118,6 +168,22 @@ Rectangle {
                         color: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 0.96)
                         border.width: 1
                         border.color: Qt.rgba(1, 1, 1, 0.15)
+                        
+                        // Detect mouse inside menu popup for seamless hover
+                        MouseArea {
+                            id: menuCardMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            acceptedButtons: Qt.NoButton
+                            
+                            onEntered: {
+                                closeTimer.stop();
+                            }
+                            
+                            onExited: {
+                                closeTimer.start();
+                            }
+                        }
                         
                         ColumnLayout {
                             id: menuCol
@@ -234,6 +300,14 @@ Rectangle {
                                             anchors.fill: parent
                                             hoverEnabled: entryItem.isEnabled
                                             cursorShape: entryItem.isEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                            
+                                            onEntered: {
+                                                closeTimer.stop();
+                                            }
+                                            
+                                            onExited: {
+                                                closeTimer.start();
+                                            }
                                             
                                             onClicked: {
                                                 if (entryItem.isEnabled && entryItem.modelData) {
