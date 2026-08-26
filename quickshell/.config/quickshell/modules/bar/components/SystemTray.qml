@@ -74,7 +74,7 @@ Rectangle {
                 // Hover timers for open and close
                 Timer {
                     id: openTimer
-                    interval: 180
+                    interval: 160
                     onTriggered: {
                         if (trayItem.modelData.hasMenu) {
                             trayItem.isMenuOpen = true;
@@ -84,9 +84,9 @@ Rectangle {
                 
                 Timer {
                     id: closeTimer
-                    interval: 280
+                    interval: 400
                     onTriggered: {
-                        if (!iconMouse.containsMouse && !menuCardMouse.containsMouse) {
+                        if (!iconMouse.containsMouse && !popupHoverArea.containsMouse) {
                             trayItem.isMenuOpen = false;
                         }
                     }
@@ -108,7 +108,7 @@ Rectangle {
                     
                     onExited: {
                         openTimer.stop();
-                        closeTimer.start();
+                        closeTimer.restart();
                     }
                     
                     onClicked: mouse => {
@@ -147,11 +147,11 @@ Rectangle {
                     anchor.edges: Edges.Bottom
                     anchor.gravity: Edges.Bottom
                     anchor.adjustment: PopupAdjustment.All
-                    anchor.margins.top: 8
+                    anchor.margins.top: 4
                     
                     color: "transparent"
-                    implicitWidth: menuCard.implicitWidth
-                    implicitHeight: menuCard.implicitHeight
+                    implicitWidth: menuContainer.implicitWidth
+                    implicitHeight: menuContainer.implicitHeight
                     
                     onVisibleChanged: {
                         if (!visible) {
@@ -159,19 +159,14 @@ Rectangle {
                         }
                     }
                     
-                    // Card background with Pywal theme
-                    Rectangle {
-                        id: menuCard
-                        implicitWidth: Math.max(200, menuCol.implicitWidth + 24)
-                        implicitHeight: menuCol.implicitHeight + 16
-                        radius: 8
-                        color: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 0.96)
-                        border.width: 1
-                        border.color: Qt.rgba(1, 1, 1, 0.15)
+                    Item {
+                        id: menuContainer
+                        implicitWidth: menuCard.implicitWidth
+                        implicitHeight: menuCard.implicitHeight
                         
-                        // Detect mouse inside menu popup for seamless hover
+                        // Full-coverage hover tracker across the entire popup window
                         MouseArea {
-                            id: menuCardMouse
+                            id: popupHoverArea
                             anchors.fill: parent
                             hoverEnabled: true
                             acceptedButtons: Qt.NoButton
@@ -181,142 +176,150 @@ Rectangle {
                             }
                             
                             onExited: {
-                                closeTimer.start();
+                                closeTimer.restart();
                             }
                         }
                         
-                        ColumnLayout {
-                            id: menuCol
+                        // Card background with Pywal theme
+                        Rectangle {
+                            id: menuCard
                             anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 3
+                            implicitWidth: Math.max(200, menuCol.implicitWidth + 24)
+                            implicitHeight: menuCol.implicitHeight + 16
+                            radius: 8
+                            color: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 0.96)
+                            border.width: 1
+                            border.color: Qt.rgba(1, 1, 1, 0.15)
                             
-                            // App title header
-                            RowLayout {
-                                Layout.fillWidth: true
-                                Layout.bottomMargin: 4
-                                spacing: 6
+                            ColumnLayout {
+                                id: menuCol
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 3
                                 
-                                IconImage {
-                                    implicitWidth: 14
-                                    implicitHeight: 14
-                                    source: trayItem.modelData.icon || ""
-                                }
-                                
-                                Text {
-                                    text: trayItem.modelData.title || trayItem.modelData.id || "Menu"
-                                    font.family: "JetBrainsMono Nerd Font Propo"
-                                    font.pixelSize: 12
-                                    font.bold: true
-                                    color: pywal.color1
+                                // App title header
+                                RowLayout {
                                     Layout.fillWidth: true
-                                    elide: Text.ElideRight
-                                }
-                            }
-                            
-                            // Header divider
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 1
-                                color: Qt.rgba(1, 1, 1, 0.1)
-                                Layout.bottomMargin: 2
-                            }
-                            
-                            // Menu entries
-                            Repeater {
-                                model: menuOpener.children ? menuOpener.children.values : []
-                                
-                                delegate: Item {
-                                    id: entryItem
-                                    required property var modelData
+                                    Layout.bottomMargin: 4
+                                    spacing: 6
                                     
-                                    readonly property bool isSep: modelData?.isSeparator ?? false
-                                    readonly property string rawText: modelData?.text ?? ""
-                                    readonly property string cleanText: rawText.replace(/&/g, "")
-                                    readonly property bool isEnabled: modelData?.enabled ?? true
-                                    
-                                    Layout.fillWidth: true
-                                    implicitHeight: isSep ? 7 : 26
-                                    
-                                    // Separator line
-                                    Rectangle {
-                                        anchors.centerIn: parent
-                                        width: parent.width
-                                        height: 1
-                                        color: Qt.rgba(1, 1, 1, 0.12)
-                                        visible: entryItem.isSep
+                                    IconImage {
+                                        implicitWidth: 14
+                                        implicitHeight: 14
+                                        source: trayItem.modelData.icon || ""
                                     }
                                     
-                                    // Regular item button
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        radius: 5
-                                        visible: !entryItem.isSep
-                                        color: itemMouse.containsMouse && entryItem.isEnabled ? pywal.color1 : "transparent"
+                                    Text {
+                                        text: trayItem.modelData.title || trayItem.modelData.id || "Menu"
+                                        font.family: "JetBrainsMono Nerd Font Propo"
+                                        font.pixelSize: 12
+                                        font.bold: true
+                                        color: pywal.color1
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                    }
+                                }
+                                
+                                // Header divider
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 1
+                                    color: Qt.rgba(1, 1, 1, 0.1)
+                                    Layout.bottomMargin: 2
+                                }
+                                
+                                // Menu entries
+                                Repeater {
+                                    model: menuOpener.children ? menuOpener.children.values : []
+                                    
+                                    delegate: Item {
+                                        id: entryItem
+                                        required property var modelData
                                         
-                                        Behavior on color {
-                                            ColorAnimation { duration: 120 }
+                                        readonly property bool isSep: modelData?.isSeparator ?? false
+                                        readonly property string rawText: modelData?.text ?? ""
+                                        readonly property string cleanText: rawText.replace(/&/g, "")
+                                        readonly property bool isEnabled: modelData?.enabled ?? true
+                                        
+                                        Layout.fillWidth: true
+                                        implicitHeight: isSep ? 7 : 26
+                                        
+                                        // Separator line
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: parent.width
+                                            height: 1
+                                            color: Qt.rgba(1, 1, 1, 0.12)
+                                            visible: entryItem.isSep
                                         }
                                         
-                                        RowLayout {
+                                        // Regular item button
+                                        Rectangle {
                                             anchors.fill: parent
-                                            anchors.leftMargin: 8
-                                            anchors.rightMargin: 8
-                                            spacing: 8
+                                            radius: 5
+                                            visible: !entryItem.isSep
+                                            color: itemMouse.containsMouse && entryItem.isEnabled ? pywal.color1 : "transparent"
                                             
-                                            // Checkbox / radio indicator
-                                            Text {
-                                                visible: entryItem.modelData?.buttonType !== undefined && entryItem.modelData?.buttonType !== 0
-                                                text: entryItem.modelData?.checkState === Qt.Checked ? "✓" : " "
-                                                font.family: "JetBrainsMono Nerd Font Propo"
-                                                font.pixelSize: 12
-                                                font.bold: true
-                                                color: itemMouse.containsMouse ? pywal.color0 : pywal.color1
-                                                Layout.preferredWidth: 12
+                                            Behavior on color {
+                                                ColorAnimation { duration: 120 }
                                             }
                                             
-                                            // Icon if available
-                                            IconImage {
-                                                implicitWidth: 14
-                                                implicitHeight: 14
-                                                source: entryItem.modelData?.icon || ""
-                                                visible: (entryItem.modelData?.icon ?? "") !== ""
+                                            RowLayout {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: 8
+                                                anchors.rightMargin: 8
+                                                spacing: 8
+                                                
+                                                // Checkbox / radio indicator
+                                                Text {
+                                                    visible: entryItem.modelData?.buttonType !== undefined && entryItem.modelData?.buttonType !== 0
+                                                    text: entryItem.modelData?.checkState === Qt.Checked ? "✓" : " "
+                                                    font.family: "JetBrainsMono Nerd Font Propo"
+                                                    font.pixelSize: 12
+                                                    font.bold: true
+                                                    color: itemMouse.containsMouse ? pywal.color0 : pywal.color1
+                                                    Layout.preferredWidth: 12
+                                                }
+                                                
+                                                // Icon if available
+                                                IconImage {
+                                                    implicitWidth: 14
+                                                    implicitHeight: 14
+                                                    source: entryItem.modelData?.icon || ""
+                                                    visible: (entryItem.modelData?.icon ?? "") !== ""
+                                                }
+                                                
+                                                // Action text label
+                                                Text {
+                                                    Layout.fillWidth: true
+                                                    text: entryItem.cleanText
+                                                    font.family: "JetBrainsMono Nerd Font Propo"
+                                                    font.pixelSize: 13
+                                                    font.bold: itemMouse.containsMouse
+                                                    color: itemMouse.containsMouse && entryItem.isEnabled ? pywal.color0 : (entryItem.isEnabled ? "white" : Qt.rgba(1, 1, 1, 0.35))
+                                                    elide: Text.ElideRight
+                                                }
                                             }
                                             
-                                            // Action text label
-                                            Text {
-                                                Layout.fillWidth: true
-                                                text: entryItem.cleanText
-                                                font.family: "JetBrainsMono Nerd Font Propo"
-                                                font.pixelSize: 13
-                                                font.bold: itemMouse.containsMouse
-                                                color: itemMouse.containsMouse && entryItem.isEnabled ? pywal.color0 : (entryItem.isEnabled ? "white" : Qt.rgba(1, 1, 1, 0.35))
-                                                elide: Text.ElideRight
-                                            }
-                                        }
-                                        
-                                        MouseArea {
-                                            id: itemMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: entryItem.isEnabled
-                                            cursorShape: entryItem.isEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                            
-                                            onEntered: {
-                                                closeTimer.stop();
-                                            }
-                                            
-                                            onExited: {
-                                                closeTimer.start();
-                                            }
-                                            
-                                            onClicked: {
-                                                if (entryItem.isEnabled && entryItem.modelData) {
-                                                    if (typeof entryItem.modelData.triggered === "function") {
-                                                        entryItem.modelData.triggered();
-                                                    } else if (typeof entryItem.modelData.sendTriggered === "function") {
-                                                        entryItem.modelData.sendTriggered();
+                                            MouseArea {
+                                                id: itemMouse
+                                                anchors.fill: parent
+                                                hoverEnabled: entryItem.isEnabled
+                                                cursorShape: entryItem.isEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                                
+                                                onEntered: {
+                                                    closeTimer.stop();
+                                                }
+                                                
+                                                onClicked: {
+                                                    if (entryItem.isEnabled && entryItem.modelData) {
+                                                        if (typeof entryItem.modelData.triggered === "function") {
+                                                            entryItem.modelData.triggered();
+                                                        } else if (typeof entryItem.modelData.sendTriggered === "function") {
+                                                            entryItem.modelData.sendTriggered();
+                                                        }
+                                                        trayItem.isMenuOpen = false;
                                                     }
-                                                    trayItem.isMenuOpen = false;
                                                 }
                                             }
                                         }
