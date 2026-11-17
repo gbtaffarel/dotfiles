@@ -10,6 +10,8 @@ Rectangle {
     
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 10
+    width: implicitWidth
+    height: implicitHeight
     radius: 5
     color: Qt.rgba(pywal.color8.r, pywal.color8.g, pywal.color8.b, 0.95)
     border.width: 1

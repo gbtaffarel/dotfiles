@@ -14,6 +14,7 @@ alias py='venv/bin/python3.14'
 alias ir='linux-enable-ir-emitter run'
 alias obsidian-sync='/usr/bin/flock -w 1800 /tmp/rclone-bisync.lock /usr/sbin/rclone bisync --track-renames /home/gabriel/Documentos/ECP/ gdrive:ECP --exclude-from /home/gabriel/Documentos/ECP/.exclude.txt --log-file=/home/gabriel/rclone.log -v'
 alias search='yay -Ss | grep'
+alias code='antigravity-ide'
 
 # agiliza a compilação com pandoc para PDF
 pdoc() {
@@ -57,6 +58,3 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # Added by Antigravity CLI installer
 export PATH="/home/gabriel/.local/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/.local/lib:${LD_LIBRARY_PATH}"
-
-export QSYS_ROOTDIR="/home/gabriel/.cache/yay/quartus-free/pkg/quartus-free-quartus/opt/intelFPGA/25.1/quartus/sopc_builder/bin"
-

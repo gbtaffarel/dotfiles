@@ -9,8 +9,13 @@ Singleton {
     readonly property int minutes: clock.minutes
     readonly property int seconds: clock.seconds
 
-    function format(fmt: string): string {
+    function format(fmt) {
         return Qt.formatDateTime(clock.date, fmt);
+    }
+
+    function formatLocalized(fmt, loc) {
+        var targetLocale = loc ? loc : Qt.locale("pt_BR");
+        return clock.date.toLocaleDateString(targetLocale, fmt);
     }
 
     SystemClock {

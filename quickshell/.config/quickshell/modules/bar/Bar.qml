@@ -54,6 +54,7 @@ Item {
     // ═══════════════════════════════════════════════════════════════
     BarComponents.Clock {
         id: centerSection
+        barWindow: root.barWindow
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
     }

@@ -35,7 +35,11 @@ return {
       servers = {
         -- Verible: Verilog + SystemVerilog unificado
         verible = {
-          cmd = { vim.fn.stdpath("data") .. "/mason/bin/verible-verilog-ls" },
+          cmd = {
+            vim.fn.stdpath("data") .. "/mason/bin/verible-verilog-ls",
+            "--rules=-parameter-name-style",
+            "--rules_config_search",
+          },
           filetypes = { "verilog", "systemverilog" },
           root_dir = function(buf, on_dir)
             local fname = vim.api.nvim_buf_get_name(buf)
